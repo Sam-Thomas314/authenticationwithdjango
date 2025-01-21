@@ -62,3 +62,24 @@ class EnrollView(View):
         course.total_enrollment += 1
         course.save()
         return HttpResponseRedirect(reverse(viewname='onlinecourse:course_details', args=(course.id,)))
+
+def registration_request(request):
+    context = {}
+    if request.method == "GET":
+        return render(request, 'onlinecourse/user_registration.html', context)
+    elif request.method == "POST":
+        username = request.POST['username']
+        firstname = request.POST['first_name']
+        lastname = request.POST['last_name']
+        password = request.POST['password']
+
+        user_exist = False
+        try:
+            User.objects.get(username = username)
+            user_exist = True
+        except:
+            logger.debug("{} is new user".format(username))
+        if not user_exist:
+            user = User.objects.create_user(first_name = firstname, last_name = lastname, username = username, password = password)
+            login(request, user)
+            return redirect ("onlinecourse:popular_course_list")
